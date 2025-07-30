@@ -3,14 +3,14 @@ using Tarject.Runtime.Core.Injecter;
 using Tarject.Runtime.Utility;
 using UnityEngine;
 
-namespace Tarject.Runtime.Core.Factory
+namespace Tarject.Runtime.Core.Instantiator
 {
-    public static class Instantiator
+    public static class StaticInstantiator
     {
         private static GameObject _hiddenParentObject;
 
-        public static TFactorable CreateHiddenObject<TFactorable>(TFactorable prefab, DIContainer dIContainer, out bool setActiveAfterInitialization, Transform parent = null)
-            where TFactorable : Component, IFactorable
+        public static T CreateHiddenObject<T>(T prefab, DIContainer container, out bool setActiveAfterInitialization, Transform parent = null)
+            where T : Component
         {
             setActiveAfterInitialization = prefab.gameObject.activeSelf;
 
@@ -25,8 +25,9 @@ namespace Tarject.Runtime.Core.Factory
 #endif
             }
 
-            TFactorable createdObject = Object.Instantiate(prefab, tempParent);
-            createdObject.InjectToFields(dIContainer);
+            T createdObject = Object.Instantiate(prefab, tempParent);
+            container ??= createdObject.gameObject.scene.GetSceneContainer();
+            createdObject.InjectToFields(container);
 
             if (createdObject is MonoInjecter monoInjecter)
             {
@@ -52,16 +53,21 @@ namespace Tarject.Runtime.Core.Factory
 
         private static Transform GetOrCreateHiddenParent()
         {
-            if (_hiddenParentObject == null)
+            if (_hiddenParentObject != null)
             {
-                _hiddenParentObject = new GameObject("HiddenParentObject");
-                _hiddenParentObject.hideFlags = HideFlags.HideAndDontSave;
-                _hiddenParentObject.SetActive(false);
+                return _hiddenParentObject.transform;
+            }
 
-                if (Application.isPlaying)
-                {
-                    Object.DontDestroyOnLoad(_hiddenParentObject);
-                }
+            _hiddenParentObject = new GameObject("HiddenParentObject")
+            {
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            
+            _hiddenParentObject.SetActive(false);
+
+            if (Application.isPlaying)
+            {
+                Object.DontDestroyOnLoad(_hiddenParentObject);
             }
 
             return _hiddenParentObject.transform;
