@@ -1,4 +1,5 @@
 ﻿using Tarject.Runtime.StructuralDefinitions;
+using Tarject.Runtime.Core.Injecter;
 using System;
 using Tarject.Runtime.Utility;
 
@@ -126,6 +127,11 @@ namespace Tarject.Runtime.Core.Context
             bindedObject.CreatedObject = objects.Length > 0
                 ? Activator.CreateInstance(bindedObject.Type, objects)
                 : Activator.CreateInstance(bindedObject.Type);
+
+            if (bindedObject.CreatedObject != null)
+            {
+                bindedObject.CreatedObject.InjectToFields(this);
+            }
 
             if (bindedObject is BindedFactory bindedFactory)
             {
