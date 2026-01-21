@@ -26,7 +26,7 @@ namespace Tarject.Runtime.Core.Context
             return bindedObject;
         }
 
-        public BindedObject BindFromInstance<T>(T instance) where T : class
+        public BindedObject BindFromInstance<T>(T instance)
         {
             Type type = typeof(T);
 
@@ -72,7 +72,7 @@ namespace Tarject.Runtime.Core.Context
             }
         }
 
-        public T Resolve<T>(Type type = null, string id = "") where T : class
+        public T Resolve<T>(Type type = null, string id = "")
         {
             type ??= typeof(T);
 
@@ -83,15 +83,15 @@ namespace Tarject.Runtime.Core.Context
             BindedObject bindedObject = _bindedObjects.Find(predicate);
             if (bindedObject == null)
             {
-                return _parentDIContainer?.Resolve<T>(type, id);
+                return _parentDIContainer != null ? _parentDIContainer.Resolve<T>(type, id) : default;
             }
 
             TryCreateBindedObject(bindedObject);
 
-            return bindedObject.CreatedObject as T;
+            return (T)bindedObject.CreatedObject;
         }
 
-        public T[] ResolveAll<T>(Type type = null, string id = "") where T : class
+        public T[] ResolveAll<T>(Type type = null, string id = "")
         {
             type ??= typeof(T);
 
@@ -111,7 +111,7 @@ namespace Tarject.Runtime.Core.Context
             {
                 TryCreateBindedObject(bindedObjects[index]);
 
-                createdObjects[index] = bindedObjects[index].CreatedObject as T;
+                createdObjects[index] = (T)bindedObjects[index].CreatedObject;
             }
 
             return createdObjects;
@@ -139,7 +139,7 @@ namespace Tarject.Runtime.Core.Context
             }
         }
 
-        public OptimizedList<T> GetObjectsOfType<T>() where T : class
+        public OptimizedList<T> GetObjectsOfType<T>()
         {
             OptimizedList<T> result = new OptimizedList<T>();
 
